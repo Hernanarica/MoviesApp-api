@@ -5,7 +5,6 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -20,22 +19,17 @@ class AuthController extends Controller
 	{
 		$credentials = $request->only('email', 'password');
 		
-		$token = Auth::attempt($credentials);
-		if (!$token) {
+		if (!$token = auth()->attempt($credentials)) {
 			return response()->json([
 				'status'  => 'error',
 				'message' => 'Unauthorized',
 			], 401);
 		}
 		
-		$user = Auth::user();
 		return response()->json([
-			'status'        => 'success',
-			'user'          => $user,
-			'authorisation' => [
-				'token' => $token,
-				'type'  => 'bearer',
-			]
+			'status' => 'success',
+			'user'   => auth()->user(),
+			'token'  => $token
 		]);
 		
 	}
@@ -53,34 +47,24 @@ class AuthController extends Controller
 			'password' => Hash::make($request->password),
 		]);
 		
-		$token = Auth::login($user);
-
-//		return response()->json([
-//			'status'        => 'success',
-//			'message'       => 'User created successfully',
-//			'user'          => $user,
-//			'authorisation' => [
-//				'token' => $token,
-//				'type'  => 'bearer',
-//			]
-//		]);
+		return response()->json([
+			'status'  => 'success',
+			'message' => 'User created successfully',
+			'user'    => $user,
+		]);
 	}
 	
 	public function refresh()
 	{
 		return response()->json([
-			'status'        => 'success',
-			'user'          => Auth::user(),
-			'authorisation' => [
-				'token' => Auth::refresh(),
-				'type'  => 'bearer',
-			]
+			'status'   => 'success',
+			'newToken' => auth()->refresh(),
 		]);
 	}
 	
 	public function logout()
 	{
-		Auth::logout();
+		auth()->logout();
 		
 		return response()->json([
 			'status'  => 'success',
