@@ -5,16 +5,11 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-	public function __construct()
-	{
-//		Middleware que da acceso solo a login y register sin pedir token
-		$this->middleware('auth:api', ['except' => ['login', 'register']]);
-	}
-	
 	public function login(Request $request)
 	{
 		$credentials = $request->only('email', 'password');
@@ -23,14 +18,14 @@ class AuthController extends Controller
 			return response()->json([
 				'status'  => 'error',
 				'message' => 'Unauthorized',
-			], 401);
+			], Response::HTTP_UNAUTHORIZED);
 		}
 		
 		return response()->json([
 			'status' => 'success',
 			'user'   => auth()->user(),
 			'token'  => $token
-		]);
+		], Response::HTTP_OK);
 		
 	}
 	
@@ -51,7 +46,7 @@ class AuthController extends Controller
 			'status'  => 'success',
 			'message' => 'User created successfully',
 			'user'    => $user,
-		]);
+		], Response::HTTP_OK);
 	}
 	
 	public function refresh()
@@ -59,7 +54,7 @@ class AuthController extends Controller
 		return response()->json([
 			'status'   => 'success',
 			'newToken' => auth()->refresh(),
-		]);
+		], Response::HTTP_OK);
 	}
 	
 	public function logout()
@@ -69,6 +64,6 @@ class AuthController extends Controller
 		return response()->json([
 			'status'  => 'success',
 			'message' => 'Successfully logged out',
-		]);
+		], Response::HTTP_OK);
 	}
 }
